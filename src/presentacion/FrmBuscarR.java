@@ -13,26 +13,42 @@ import Datos.DReservas;
 
 public class FrmBuscarR extends JFrame {
 
-	private JTextField txtBuscar;
-	private JButton btnBuscar;
+	private JTextField txtBuscar,txtNombre;
+	private JButton btnBuscar,btnGuardar,btnCancelar,btnNuevo;
 	private JTable tblBuscar;
 	private JScrollPane scrpBuscar;
 	private DefaultTableModel dtmBuscar;
+	private JLabel lblNombre;
 	
 	public FrmBuscarR() {
 		setTitle("Seleccione una reservacion");
 		setLayout(null);
-		setSize(400,350);
+		setSize(535,520);
 		setVisible(true);
 		
+		ImageIcon imNuevo= new ImageIcon(getClass().getResource("/imagenes/nuevo.png"));
+		ImageIcon imGuardar= new ImageIcon(getClass().getResource("/imagenes/guardar.png"));
+		ImageIcon imCancelar= new ImageIcon(getClass().getResource("/imagenes/cancelar.png"));
 		
 		txtBuscar = new JTextField();
 		btnBuscar = new JButton("Buscar");
+		txtNombre = new JTextField();
+		lblNombre = new JLabel("Nombre:");
 		
 		String titulos[]= {"Id" , "Nombre" ,"Fecha", "Hora" , "Telefono" };
 		dtmBuscar = new DefaultTableModel(null,titulos);
 		tblBuscar = new JTable(dtmBuscar);
 		scrpBuscar = new JScrollPane(tblBuscar);
+		
+		btnCancelar = new JButton("Cancelar");
+		btnGuardar = new JButton("Guardar");
+		btnNuevo = new JButton("Nuevo");
+		
+		btnNuevo.setIcon(imNuevo);
+		btnCancelar.setIcon(imGuardar);
+		btnGuardar.setIcon(imCancelar);
+		
+		
 		
 		add(txtBuscar);
 		add(btnBuscar);

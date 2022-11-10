@@ -202,9 +202,7 @@ public class FrmUsuarios<ModelEvent> extends JInternalFrame{
 	});
 	
 	tblUsuarios.addMouseListener(new MouseAdapter() {
-		
 		public void mouseClicked(MouseEvent evt) {
-			System.out.println("fila");
 			tblUsuariosMouseClicked(evt);
 			
 		}

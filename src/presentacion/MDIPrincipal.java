@@ -13,7 +13,7 @@ public class MDIPrincipal extends JFrame {
 	private JMenu jmiMenuRegistros, jmiMenuOpciones, jmiMenuConsultas;
 	private JMenuItem jmItemReservas, jmItemVentas, jmItemPlatillos;
 	private JMenuItem jmItemUsuarios, jmItemConsultasV;
-	private JDesktopPane jdpEscritorio;
+	public static JDesktopPane jdpEscritorio;
 	String Us;
 	
 	public MDIPrincipal() {
@@ -104,6 +104,16 @@ public class MDIPrincipal extends JFrame {
 			public void actionPerformed(ActionEvent evt) { 
 				jmItemVentasActionPerformed(evt);
 		}});
+		jmItemConsultasV.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) { 
+				jmItemConsultasVActionPerformed(evt);
+		}});
+	}
+	protected void jmItemConsultasVActionPerformed(ActionEvent evt) {
+		FrmConsultarVentas misVentas = new FrmConsultarVentas();
+		jdpEscritorio.add(misVentas);
+		misVentas.show();
+		
 	}
 	protected void jmItemVentasActionPerformed(ActionEvent evt) {
 		FrmVentas misVentas = new FrmVentas();

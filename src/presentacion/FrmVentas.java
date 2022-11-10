@@ -5,7 +5,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.Connection;
 import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -14,8 +17,10 @@ import javax.swing.table.DefaultTableModel;
 
 import com.toedter.calendar.JDateChooser;
 
+import Datos.DConexion;
 import Datos.DReservas;
 import Datos.Dventas;
+import logica.LReserva;
 import logica.Lventas;
 public class FrmVentas extends JInternalFrame {
 	
@@ -197,6 +202,51 @@ public class FrmVentas extends JInternalFrame {
 			
 			}
 		});
+		
+		tblVentas.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent evt) {
+				tblVentasMouseClicked(evt);
+				//System.out.println("fila");	
+			}
+			private void tblVentasMouseClicked(MouseEvent evt) {
+				//if(evt.getClickCount()==2) {
+				try {
+				DConexion cn = new DConexion();
+				Connection con = cn.conectarDB();
+				
+				int fila = tblVentas.rowAtPoint(evt.getPoint());
+				txtId.setText(tblVentas.getValueAt(fila, 0).toString());
+				txtIdReserva.setText(tblVentas.getValueAt(fila, 1).toString());
+				txtNombre.setText(tblVentas.getValueAt(fila, 2).toString());
+				dcFecha.setDate(Date.valueOf(tblVentas.getValueAt(fila, 3).toString()));
+				lblHora.setText(tblVentas.getValueAt(fila, 4).toString());
+				FrmDetalleVenta miDetalle = new FrmDetalleVenta();
+				miDetalle.setDatos(Integer.parseInt(tblVentas.getValueAt(fila, 0).toString()),Integer.parseInt(tblVentas.getValueAt(fila, 1).toString()),tblVentas.getValueAt(fila, 2).toString(),tblVentas.getValueAt(fila, 3).toString(),tblVentas.getValueAt(fila, 4).toString());
+				miDetalle.setVisible(true);
+				
+				//}
+			String titulos[] = {"Codigo","Producto","Cantidad","P/Unitario"};
+			String registros[] = new  String [4];
+			DefaultTableModel modelo = new DefaultTableModel(null, titulos);
+			String sql = "select * from tblDetalleVenta where VentaId = '"+tblVentas.getValueAt(fila, 0).toString()+"'";
+			PreparedStatement pst = con.prepareStatement(sql);
+			ResultSet rs = pst.executeQuery();
+			while(rs.next()) {
+				registros[0] = rs.getString(3);
+				registros[1] = rs.getString(4);
+				registros[2] = rs.getString(5);
+				registros[3] = rs.getString(6);
+				modelo.addRow(registros);
+			}
+			miDetalle.setModelo(modelo);
+			MDIPrincipal.jdpEscritorio.add(miDetalle);
+			miDetalle.show();
+				}catch(Exception ex) {
+				ex.printStackTrace();
+			}
+			}
+		});
+		
 		tblVentas.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent evt) {
 				//System.out.println("fila");
@@ -210,6 +260,7 @@ public class FrmVentas extends JInternalFrame {
 		mostrarDtos();
 	}
 
+	
 	public void mostrarDtos() {
 		Dventas miRes = new Dventas();
 		dtVentas = miRes.mostrarVentas();
@@ -242,21 +293,40 @@ public class FrmVentas extends JInternalFrame {
 		dcFecha.setDate(null);
 	}
 	protected void tblVentasMouseClicked(MouseEvent evt) {
-		// TODO Auto-generated method stub
+			int fila = tblVentas.rowAtPoint(evt.getPoint());
+			txtId.setText(tblVentas.getValueAt(fila, 0).toString());
+			txtIdReserva.setText(tblVentas.getValueAt(fila, 1).toString());
+			txtNombre.setText(tblVentas.getValueAt(fila, 2).toString());
+			dcFecha.setDate(Date.valueOf(tblVentas.getValueAt(fila, 3).toString()));
+			lblHora.setText(tblVentas.getValueAt(fila, 4).toString());
+			
+		}
 		
-	}
+	
 
 
 
 	protected void btnBuscarActionPerformed(ActionEvent evt) {
-		// TODO Auto-generated method stub
+		Dventas fn = new Dventas();
+		dtVentas = fn.BuscarVenta(Integer.parseInt(txtBuscar.getText()));
+		tblVentas.setModel(dtVentas);
 		
 	}
 
 
 
 	protected void btnEliminarActionPerformed(ActionEvent evt) {
-		// TODO Auto-generated method stub
+		if(!txtId.getText().equals("")) {
+			int confirmar = JOptionPane.showConfirmDialog(this, "En realidad deseas eliminar el registro?","confirmar",2);
+			if(confirmar == 0) {
+				Lventas dts = new Lventas();
+				Dventas fn = new Dventas();
+				dts.setId(Integer.parseInt(txtId.getText()));
+				String mensaje = fn.EliminarVenta(dts);
+				JOptionPane.showMessageDialog(this, mensaje);
+				mostrarDtos();
+			}
+		}
 		limpiar();
 	}
 
@@ -264,6 +334,17 @@ public class FrmVentas extends JInternalFrame {
 
 	protected void btnGuardarActionPerformed(ActionEvent evt) {
 		// TODO Auto-generated method stub
+		if(txtIdReserva.getText().equals("")) {
+			JOptionPane.showMessageDialog(rootPane, "Falta seleccionar una reservacion y/o registrar un cliente","validacion",2);
+			txtIdReserva.requestFocusInWindow();
+			return;
+		}
+		if(dcFecha.getDate() == null) {
+			JOptionPane.showMessageDialog(rootPane, "Falta seleccionar una Fecha","validacion",2);
+			dcFecha.requestFocusInWindow();
+			return;
+		}
+		
 		if(txtId.getText().equals("")){
 			Lventas dts = new Lventas();
 			Dventas fn = new Dventas();
@@ -278,7 +359,7 @@ public class FrmVentas extends JInternalFrame {
 			dts.setFecha(new Date(a,m,d));
 			dts.setHora(lblHora.getText());
 			String msg = fn.insertarVenta(dts);
-			JOptionPane.showMessageDialog(this, msg);
+			//JOptionPane.showMessageDialog(this, msg);
 			
 		}else {
 			Lventas dts = new Lventas();
@@ -327,9 +408,20 @@ public class FrmVentas extends JInternalFrame {
 
 
 	public static void setReserva(String Id, String string) {
-		System.out.println(string);
+		//System.out.println(string);
 		txtIdReserva.setText(Id);
 		txtNombre.setText(string);
+		
+	}
+
+	public static void retornaId(int idv, int idr, String nombre, String fecha, String hora) {
+		if (idv != 0) {
+			FrmDetalleVenta miDetalle = new FrmDetalleVenta();
+			miDetalle.setDatos(idv,idr,nombre,fecha,hora);
+			MDIPrincipal.jdpEscritorio.add(miDetalle);
+			miDetalle.toFront();
+			miDetalle.setVisible(true);
+		}
 		
 	}
 }
